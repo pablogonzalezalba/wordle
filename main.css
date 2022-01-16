@@ -1,0 +1,29 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer components {
+  .row {
+    @apply grid grid-cols-5 gap-2;
+  }
+
+  .tile {
+    @apply border-2 border-gray-300 aspect-square uppercase text-4xl font-bold flex justify-center items-center;
+  }
+
+  .key {
+    @apply font-semibold flex justify-center items-center rounded bg-gray-200 py-4;
+  }
+
+  .in-place {
+    @apply bg-green-500 text-white;
+  }
+
+  .not-exists {
+    @apply bg-gray-500 text-white;
+  }
+
+  .exists {
+    @apply bg-yellow-500 text-white;
+  }
+}
