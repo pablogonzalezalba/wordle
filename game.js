@@ -21,11 +21,15 @@ class Game {
     }
 
     if (this.currentGuess.length >= this.wordSize) {
-      alert('too many letters');
+      if (this.log) {
+        console.log('Too many letters');
+      }
       return;
     }
 
     this.currentGuess += letter.toLowerCase();
+
+    this.#displayCurrentWord();
 
     if (this.log) {
       console.log({ currentGuess: this.currentGuess });
@@ -44,6 +48,8 @@ class Game {
       );
     }
 
+    this.#displayCurrentWord();
+
     if (this.log) {
       console.log({ currentGuess: this.currentGuess });
     }
@@ -55,39 +61,139 @@ class Game {
     }
 
     if (this.currentGuess.length < this.wordSize) {
-      alert('not enough letters');
+      if (this.log) {
+        console.log('Not enough letters');
+      }
+
+      this.#displayAlert('Not enough letters');
+      this.#shakeCurrentRow();
+
       return;
     }
 
     if (!dictionary.includes(this.currentGuess)) {
-      alert('not a real word');
+      if (this.log) {
+        console.log('Not in word list');
+      }
+
+      this.#displayAlert('Not in word list');
+      this.#shakeCurrentRow();
+
+      return;
     }
 
-    console.log('comparing', {
-      currentGuess: this.currentGuess,
-      targetWord: this.targetWord,
-    });
+    if (this.log) {
+      console.log('comparing', {
+        currentGuess: this.currentGuess,
+        targetWord: this.targetWord,
+      });
+    }
+
+    this.#displayResults();
 
     if (this.currentGuess === this.targetWord) {
-      alert('yay');
+      if (this.log) {
+        console.log('Correct guess');
+      }
+
+      const messages = [
+        'Genius',
+        'Magnificient',
+        'Impressive',
+        'Splendid',
+        'Great',
+        'Phew',
+      ];
+      this.#displayAlert(messages[this.currentAttempt - 1]);
+
       this.active = false;
     } else {
-      alert('nope');
+      if (this.log) {
+        console.log('Wrong guess');
+      }
       this.currentAttempt++;
       this.currentGuess = '';
     }
 
     if (this.currentAttempt > this.guesses) {
-      alert('you lost');
+      if (this.log) {
+        console.log('You lost');
+      }
+
+      this.#displayAlert(this.targetWord.toUpperCase());
+
       this.active = false;
     }
+  }
+
+  #currentRow() {
+    return document.querySelector(`.row:nth-child(${this.currentAttempt})`);
+  }
+
+  #shakeCurrentRow() {
+    const row = this.#currentRow();
+    row.classList.add('shake');
+    setTimeout(() => {
+      row.classList.remove('shake');
+    }, 1000);
+  }
+
+  #displayAlert(text) {
+    const alertDiv = document.querySelector('#alert-div');
+    alertDiv.textContent = text;
+    alertDiv.style.display = 'flex';
+    setTimeout(() => {
+      alertDiv.style.display = 'none';
+    }, 2000);
+  }
+
+  #displayCurrentWord() {
+    this.#currentRow()
+      .querySelectorAll('.tile')
+      .forEach((tile, index) => {
+        if (this.currentGuess[index]) {
+          tile.innerText = this.currentGuess[index];
+          tile.classList.add('current');
+        } else {
+          tile.innerText = '';
+          tile.classList.remove('current');
+        }
+      });
+  }
+
+  #displayResults() {
+    this.#currentRow()
+      .querySelectorAll('.tile')
+      .forEach((tile, index) => {
+        let matchKey;
+        document.querySelectorAll('.key').forEach((key) => {
+          if (
+            key.innerText.trim().toLowerCase() ===
+            tile.innerText.trim().toLowerCase()
+          ) {
+            matchKey = key;
+          }
+        });
+        if (tile.innerText.trim().toLowerCase() === this.targetWord[index]) {
+          tile.classList.add('in-place');
+          matchKey.classList.add('in-place');
+        } else if (
+          this.targetWord.includes(tile.innerText.trim().toLowerCase())
+        ) {
+          tile.classList.add('exists');
+          matchKey.classList.add('exists');
+        } else {
+          tile.classList.add('not-exists');
+          matchKey.classList.add('not-exists');
+        }
+      });
   }
 }
 
 let game;
 
 document.addEventListener('DOMContentLoaded', () => {
-  game = new Game(wordOfTheDay(), 6, true);
+  game = new Game(wordOfTheDay(), 6, false);
 });
 
 document.addEventListener('keydown', (event) => {
